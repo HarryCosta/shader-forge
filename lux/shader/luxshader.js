@@ -13,6 +13,8 @@ const fsSource = `
     uniform vec2 u_resolution;
     uniform float u_time;
     
+    uniform vec2 u_offset; // NEW: Camera pan offset
+    
     uniform vec3 u_col_core;
     uniform vec3 u_col_aura;
     uniform float u_speed;
@@ -52,6 +54,10 @@ const fsSource = `
 
     void main() {
         vec2 uv = vUv - 0.5;
+        
+        // Apply the dynamic camera pan BEFORE aspect ratio scaling
+        uv -= u_offset; 
+        
         uv.x *= u_resolution.x / u_resolution.y;
         
         float pulseMod = 1.0 + sin(u_time * u_pulse) * 0.05;

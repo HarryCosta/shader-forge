@@ -182,10 +182,18 @@ let lastY = 0;
 const tooltip = document.getElementById('tooltip');
 
 function clampCamera() {
-    camZoom = Math.max(0.8, Math.min(camZoom, 50.0));
+    let aspect = canvas.width / canvas.height;
+    
+    // Allow zooming out much further on mobile portrait
+    let minZoom = aspect < 1.0 ? 0.3 : 0.7; 
+    camZoom = Math.max(minZoom, Math.min(camZoom, 50.0));
+    
     let maxPan = Math.max(0.0, 0.5 - (0.5 / camZoom)); 
-    let margin = 0.1;
+    
+    // NEW: Apply specific margins based on device orientation
+    let margin = aspect < 1.0 ? 1.8 : 0.2; 
     maxPan += margin;
+    
     camPanX = Math.max(-maxPan, Math.min(camPanX, maxPan));
     camPanY = Math.max(-maxPan, Math.min(camPanY, maxPan));
 }
@@ -271,9 +279,64 @@ canvas.addEventListener('wheel', (e) => {
     camPanY += (worldY_before - worldY_after);
     clampCamera();
 }, { passive: false });
+// --- MOBILE TOUCH CONTROLS (PAN & PINCH-TO-ZOOM) ---
+let initialPinchDist = null;
+let initialCamZoom = null;
+
+canvas.addEventListener('touchstart', (e) => {
+    if (e.target !== canvas) return;
+    if (e.touches.length === 1) {
+        // Single finger: Pan the map
+        isDragging = true;
+        lastX = e.touches[0].clientX;
+        lastY = e.touches[0].clientY;
+    } else if (e.touches.length === 2) {
+        // Two fingers: Prepare to zoom
+        isDragging = false; 
+        let dx = e.touches[0].clientX - e.touches[1].clientX;
+        let dy = e.touches[0].clientY - e.touches[1].clientY;
+        initialPinchDist = Math.sqrt(dx * dx + dy * dy);
+        initialCamZoom = camZoom;
+    }
+}, { passive: false });
+
+window.addEventListener('touchend', () => { 
+    isDragging = false; 
+    initialPinchDist = null;
+});
+
+window.addEventListener('touchmove', (e) => {
+    // Prevent the whole webpage from "pull-to-refreshing" when dragging the map
+    if (e.target === canvas) { e.preventDefault(); }
+
+    if (isDragging && e.touches.length === 1) {
+        let dx = e.touches[0].clientX - lastX;
+        let dy = e.touches[0].clientY - lastY;
+        lastX = e.touches[0].clientX;
+        lastY = e.touches[0].clientY;
+
+        camPanX -= (dx / canvas.width) / camZoom;
+        camPanY += (dy / canvas.height) / camZoom;
+        
+        clampCamera();
+    } else if (e.touches.length === 2 && initialPinchDist !== null) {
+        let dx = e.touches[0].clientX - e.touches[1].clientX;
+        let dy = e.touches[0].clientY - e.touches[1].clientY;
+        let currentPinchDist = Math.sqrt(dx * dx + dy * dy);
+        
+        let zoomFactor = currentPinchDist / initialPinchDist;
+        camZoom = initialCamZoom * zoomFactor; // Pinch outward to zoom in
+        clampCamera();
+    }
+}, { passive: false });
 
 document.getElementById('btn_reset_camera').addEventListener('click', () => {
-    camZoom = 0.80; camPanX = 0.00; camPanY = 0.00;
+    let aspect = canvas.width / canvas.height;
+    // Auto zoom-out if on a portrait screen
+    camZoom = aspect < 1.0 ? 0.4 : 0.80; 
+    camPanX = 0.00;
+    camPanY = 0.00;
+    clampCamera();
 });
 
 

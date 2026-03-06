@@ -196,3 +196,70 @@ input[type="color"]::-webkit-color-swatch { border: 1px solid #555; border-radiu
     font-family: inherit;
     z-index: 2000 !important;
 }
+/* =========================================
+   MOBILE RESPONSIVE DESIGN (CARTAGRAPHIA)
+========================================= */
+@media (max-width: 768px) {
+    /* 1. Make the toolbar scrollable horizontally */
+    .app-toolbar {
+        padding: 0 10px;
+        gap: 5px;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+    .app-toolbar::-webkit-scrollbar { display: none; }
+    
+    .toolbar-brand { font-size: 12px; }
+    .toolbar-link { font-size: 10px; padding: 5px; }
+    .toolbar-divider { margin: 0 5px; }
+    
+    /* 2. Disable the hover slide-out logic and lock to bottom */
+    #ui-wrapper {
+        top: auto !important;
+        bottom: 0;
+        right: 0;
+        width: 100vw;
+        height: 50vh !important;
+        transform: none !important; /* Forces menu to stay open on mobile */
+    }
+    
+    /* Remove the invisible hover trigger box */
+    #ui-wrapper::before { display: none; }
+    
+    #ui-panel {
+        width: 100%;
+        height: 100%;
+        border-radius: 16px 16px 0 0;
+        border-bottom: none;
+        border-left: none;
+        border-right: none;
+        padding: 15px;
+    }
+    
+    /* 3. Fix the color picker grid so it doesn't get too squashed */
+    .color-grid { grid-template-columns: 1fr; }
+    .color-grid label[style*="grid-column"] { grid-column: span 1 !important; }
+    
+    /* 4. Fix Modals */
+    .modal-content { width: 95%; padding: 15px; }
+    .project-item { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .project-actions { width: 100%; display: flex; justify-content: flex-end; }
+}
+/* PORTRAIT MODE: Use the Bottom Drawer layout */
+@media (max-width: 768px) and (orientation: portrait) {
+    /* NEW: Shrink the canvas so it isn't hidden under the menu! */
+    canvas { height: 55vh !important; }
+    
+    #ui-wrapper {
+        top: 55vh !important; /* Start exactly below the canvas */
+        bottom: 0; right: 0; left: 0;
+        width: 100vw; height: 45vh !important; 
+        transform: none !important;
+    }
+    #ui-wrapper::before { display: none; } 
+    #ui-panel { width: 100%; height: 100%; border-radius: 16px 16px 0 0; }
+    
+    .modal-content { width: 95%; padding: 15px; }
+    .project-item { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .project-actions { width: 100%; display: flex; justify-content: flex-end; }
+}

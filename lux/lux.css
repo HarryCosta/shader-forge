@@ -265,3 +265,50 @@ input[type="color"]::-webkit-color-swatch { border: 1px solid var(--border-color
     font-family: inherit;
     z-index: 2000 !important; /* Forces the color picker to stay above the UI panel */
 }
+
+/* =========================================
+   MOBILE RESPONSIVE DESIGN (LUX)
+========================================= */
+@media (max-width: 768px) {
+    /* 1. Make the toolbar scrollable horizontally */
+    .app-toolbar {
+        padding: 0 10px;
+        gap: 5px;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+    
+    /* Hide the scrollbar for a cleaner look */
+    .app-toolbar::-webkit-scrollbar { display: none; }
+    
+    .toolbar-brand { font-size: 12px; }
+    .toolbar-link { font-size: 10px; padding: 5px; }
+    .toolbar-divider { margin: 0 5px; }
+    
+    /* 2. Convert the right-side panel into a bottom drawer */
+    #ui-wrapper {
+        top: auto;
+        bottom: 0;
+        right: 0;
+        width: 100vw;
+        height: 50vh; /* Takes up exactly half the screen */
+    }
+    
+    #ui-panel {
+        width: 100%;
+        height: 100%;
+        border-radius: 16px 16px 0 0; /* Only round the top corners */
+        border-bottom: none;
+        border-left: none;
+        border-right: none;
+        padding: 15px;
+    }
+    
+    /* 3. Ensure modals don't break the screen width */
+    #spellbook-modal { width: 95%; margin: 10px; max-height: 85vh; }
+    .modal-header h3 { font-size: 12px; }
+    
+    /* Stack the spell actions nicely */
+    .spell-item { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .spell-actions { width: 100%; justify-content: flex-end; }
+}

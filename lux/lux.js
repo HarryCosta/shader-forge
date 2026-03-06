@@ -25,6 +25,7 @@ gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([1,1, -1,1, 1,-1, -1,-1]), gl.ST
 const locs = {
     res: gl.getUniformLocation(program, "u_resolution"),
     time: gl.getUniformLocation(program, "u_time"),
+    offset: gl.getUniformLocation(program, "u_offset"),
     col_core: gl.getUniformLocation(program, "u_col_core"),
     col_aura: gl.getUniformLocation(program, "u_col_aura"),
     speed: gl.getUniformLocation(program, "u_speed"),
@@ -443,6 +444,22 @@ function render() {
     let t = (Date.now() - startTime) / 1000.0;
     gl.uniform2f(locs.res, canvas.width, canvas.height);
     gl.uniform1f(locs.time, t);
+    
+    // --- NEW: DYNAMIC CAMERA PANNING ---
+    let offsetX = 0.0;
+    let offsetY = 0.0;
+    
+    if (window.innerWidth <= 768 && window.innerHeight > window.innerWidth) {
+        // PORTRAIT PHONE: UI covers bottom 45%. Visual center shifts UP by 22.5%.
+        offsetY = 0.225; 
+    } else {
+        // DESKTOP & LANDSCAPE: UI is ~340px wide on the right. 
+        // We shift the spell LEFT by half of that (170px).
+        offsetX = -170.0 / canvas.width;
+    }
+    gl.uniform2f(locs.offset, offsetX, offsetY);
+    // -----------------------------------
+
     gl.uniform3f(locs.col_core, state.col_core[0], state.col_core[1], state.col_core[2]);
     gl.uniform3f(locs.col_aura, state.col_aura[0], state.col_aura[1], state.col_aura[2]);
     gl.uniform1f(locs.speed, state.speed);
