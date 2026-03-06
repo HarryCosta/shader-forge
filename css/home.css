@@ -1,0 +1,42 @@
+body { margin: 0; padding: 0; background-color: #0d1117; font-family: 'Segoe UI', sans-serif; color: #c9d1d9; }
+
+.top-nav { 
+    display: flex; 
+    justify-content: space-between; 
+    padding: 20px 40px; 
+    background: rgba(22, 27, 34, 0.8); 
+    border-bottom: 1px solid #30363d; 
+    
+    /* NEW STICKY PROPERTIES */
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    backdrop-filter: blur(10px); /* Optional: Frosted glass effect */
+}
+.logo { font-size: 20px; font-weight: bold; color: #8ab4f8; letter-spacing: 1px;}
+
+.hero { text-align: center; padding: 80px 20px 60px 20px; max-width: 800px; margin: 0 auto; }
+.hero h1 { font-size: 48px; color: #fff; margin-bottom: 15px; }
+.hero p { font-size: 18px; color: #8b949e; line-height: 1.6; }
+
+.showcase { padding: 40px; max-width: 1200px; margin: 0 auto; }
+.showcase h2 { border-bottom: 1px solid #30363d; padding-bottom: 10px; margin-bottom: 30px; color: #fff; }
+
+.tool-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+
+.tool-card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; }
+.tool-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.5); border-color: #8ab4f8; }
+.card-image { height: 180px; background-color: #21262d; border-bottom: 1px solid #30363d; }
+.card-content { padding: 25px; }
+.card-content h3 { margin: 0 0 10px 0; color: #fff; font-size: 22px; }
+.card-content p { color: #8b949e; font-size: 14px; margin-bottom: 25px; line-height: 1.5; }
+
+.btn-primary { display: inline-block; background: #8ab4f8; color: #0d1117; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: bold; transition: background 0.2s; }
+.btn-primary:hover { background: #a6c5f7; }
+.btn-outline { background: transparent; border: 1px solid #8ab4f8; color: #8ab4f8; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: all 0.2s; }
+.btn-outline:hover { background: #8ab4f8; color: #0d1117; }
+/* Custom hover state for the Log Out button */
+#btn-logout:hover {
+    background: #f85149 !important;
+    color: #fff !important;
+}

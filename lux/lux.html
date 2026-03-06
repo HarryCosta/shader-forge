@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lux | ShaderForge</title>
+    <link rel="stylesheet" href="lux.css">
+</head>
+<body>
+
+    <header class="app-toolbar">
+        <div class="toolbar-brand">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M12 2v20M17 5l-10 14M7 5l10 14"></path> 
+            </svg>
+            LUX
+        </div>
+        <div class="toolbar-divider"></div>
+        <button id="toolbar-spellbook" class="toolbar-link">spellbook</button>
+        <button id="toolbar-inscribe" class="toolbar-link">inscribe spell</button>
+        <div class="toolbar-divider"></div>
+        <a href="../index.html" class="toolbar-link">quit to hub</a>
+    </header>
+
+    <canvas id="luxCanvas"></canvas>
+
+    <div id="spellbook-overlay" class="overlay-hidden">
+        <div id="spellbook-modal">
+            <div class="modal-header">
+                <h3 id="modal-title">Grimoire of Evocations</h3>
+                <button id="close-modal" aria-label="Close">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div id="modal-content-area"></div>
+        </div>
+    </div>
+
+    <div id="ui-wrapper">
+        <div id="ui-panel">
+            <h2>Evocation</h2>
+
+            <details>
+                <summary>System</summary>
+                <div class="details-content system-controls">
+                    <button id="export-json-btn" class="system-btn">Export JSON</button>
+                    <input type="file" id="import-json-input" accept=".json" style="display: none;">
+                    <button id="import-json-btn" class="system-btn">Load JSON</button>
+                    <div style="height: 10px;"></div>
+                    <button id="export-vid-btn" class="system-btn capture-btn">Capture 3s Loop (.webm)</button>
+                </div>
+            </details>
+
+            <details open>
+                <summary>Manifestation</summary>
+                <div class="details-content">
+                    <label>
+                        <div class="label-text"><span>Shape</span></div>
+                        <select id="shape" class="select-input">
+                            <option value="0">Orb (Projectile)</option>
+                            <option value="1">Portal (Ring)</option>
+                            <option value="2">Beam (Pillar)</option>
+                            <option value="3">Slash (Wave)</option>
+                            <option value="4">Nova (Cross)</option>
+                            <option value="5">Flame (Teardrop)</option>
+                        </select>
+                    </label>
+                    <label>
+                        <div class="label-text"><span>Orientation</span> <span id="val_rotation" class="value-display">0.00</span></div>
+                        <input type="range" id="rotation" min="0.0" max="6.28" step="0.01" value="0.0">
+                    </label>
+                    <div class="color-grid">
+                        <label><div class="label-text"><span>Core</span></div><input type="color" id="col_core" value="#ffffff"></label>
+                        <label><div class="label-text"><span>Aura</span></div><input type="color" id="col_aura" value="#00d2ff"></label>
+                    </div>
+                </div>
+            </details>
+
+            <details>
+                <summary>Energy Dynamics</summary>
+                <div class="details-content">
+                    <label>
+                        <div class="label-text"><span>Global Speed</span> <span id="val_speed" class="value-display">1.00</span></div>
+                        <input type="range" id="speed" min="0.1" max="20.0" step="0.1" value="1.0">
+                    </label>
+                    <label>
+                        <div class="label-text"><span>Aura Scale</span> <span id="val_scale" class="value-display">0.10</span></div>
+                        <input type="range" id="scale" min="0.1" max="2.0" step="0.05" value="0.1">
+                    </label>
+                    <label>
+                        <div class="label-text"><span>Core Pulse</span> <span id="val_pulse" class="value-display">2.00</span></div>
+                        <input type="range" id="pulse" min="0.0" max="10.0" step="0.5" value="2.0">
+                    </label>
+                </div>
+            </details>
+
+            <details>
+                <summary>Turbulence (Worble)</summary>
+                <div class="details-content">
+                    <label>
+                        <div class="label-text"><span>Intensity</span> <span id="val_turbulence" class="value-display">0.50</span></div>
+                        <input type="range" id="turbulence" min="0.0" max="2.0" step="0.05" value="0.5">
+                    </label>
+                    <label>
+                        <div class="label-text"><span>Scale</span> <span id="val_turb_scale" class="value-display">10.00</span></div>
+                        <input type="range" id="turb_scale" min="1.0" max="50.0" step="1.0" value="10.0">
+                    </label>
+                    <label>
+                        <div class="label-text"><span>Flow Speed</span> <span id="val_turb_speed" class="value-display">1.00</span></div>
+                        <input type="range" id="turb_speed" min="0.0" max="5.0" step="0.1" value="1.0">
+                    </label>
+                    <label>
+                        <div class="label-text"><span>Texture Style</span></div>
+                        <select id="turb_style" class="select-input">
+                            <option value="0">Ethereal (Soft)</option>
+                            <option value="1">Volatile (Sharp)</option>
+                        </select>
+                    </label>
+                </div>
+            </details>
+
+            <details>
+                <summary>Electrical Arcs & Embers</summary>
+                <div class="details-content">
+                    <label>
+                        <div class="label-text"><span>Arc Power</span> <span id="val_lightning" class="value-display">0.00</span></div>
+                        <input type="range" id="lightning" min="0.0" max="3.0" step="0.05" value="0.0">
+                    </label>
+                    <label>
+                        <div class="label-text"><span>Arc Speed</span> <span id="val_arc_speed" class="value-display">1.00</span></div>
+                        <input type="range" id="arc_speed" min="0.1" max="10.0" step="0.1" value="1.0">
+                    </label>
+                    <label>
+                        <div class="label-text"><span>Arc Scale</span> <span id="val_arc_scale" class="value-display">1.00</span></div>
+                        <input type="range" id="arc_scale" min="0.1" max="10.0" step="0.1" value="1.0">
+                    </label>
+                    <label>
+                        <div class="label-text"><span>Arc Style</span></div>
+                        <select id="arc_style" class="select-input">
+                            <option value="0">Smooth Flow</option>
+                            <option value="1">Voltaic Crackle</option>
+                        </select>
+                    </label>
+                    <label>
+                        <div class="label-text"><span>Ember Density</span> <span id="val_sparks" class="value-display">0.50</span></div>
+                        <input type="range" id="sparks" min="0.0" max="1.0" step="0.05" value="0.5">
+                    </label>
+                </div>
+            </details>
+        </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script src="shader/luxshader.js"></script>
+    <script src="lux.js"></script>
+</body>
+</html>

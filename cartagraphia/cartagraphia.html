@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cartagraphia</title>
+    <link rel="stylesheet" href="cartagraphia.css">
+    <link rel="icon" type="image/png" href="image/icon.png">
+</head>
+<body>
+
+    <div id="tooltip" style="position: absolute; display: none; background: rgba(20,25,30,0.9); color: #fff; padding: 8px 12px; border-radius: 4px; pointer-events: none; font-weight: bold; border: 1px solid #8ab4f8; font-size: 14px; z-index: 1000; box-shadow: 0px 4px 10px rgba(0,0,0,0.5);">Kingdom Name</div>
+    <header class="app-toolbar">
+        <div class="toolbar-brand">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+            </svg>
+            CARTAGRAPHIA
+        </div>
+        <div class="toolbar-divider"></div>
+        <button id="toolbar-save" class="toolbar-link">save map</button>
+        <div class="toolbar-divider"></div>
+        <button id="toolbar-projects" class="toolbar-link">projects</button>
+        <div class="toolbar-divider"></div>
+        <a href="../index.html" class="toolbar-link">quit to hub</a>
+    </header>
+
+    <div id="projects-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>My Projects (Local Save)</h3>
+                <button id="btn-close-modal" class="btn-outline">Close</button>
+            </div>
+            <div id="projects-list" class="projects-grid">
+                </div>
+        </div>
+    </div>
+    <canvas id="mapCanvas"></canvas>
+
+    <div id="ui-wrapper">
+        <div id="ui-panel">
+            <h2>Cartographer<img src="../image/icon.png" alt="Cartagraphia Icon" width="14" height="14"></h2>
+
+            <details open>
+                <summary>System Controls</summary>
+                <div class="details-content">
+                    <label>
+                        <div class="label-text"><span>Global Map Seed</span> <span id="val_map_seed" class="value-display">313.00</span></div>
+                        <input type="range" id="map_seed" min="0.0" max="1000.0" step="1" value="313.0">
+                    </label>
+                    <div class="subsection-title">Data Management</div>
+                    <div class="flex-row">
+                        <button id="btn_export" class="btn btn-blue">Save JSON</button>
+                        <button id="btn_import" class="btn btn-green">Load JSON</button>
+                        <input type="file" id="file_import" accept=".json" style="display: none;">
+                    </div>
+                    <button id="btn_export_img" class="btn btn-gold">Export Image (PNG)</button>
+                    
+                    <div class="subsection-title">Camera</div>
+                    <span class="help-text">Scroll to zoom. Click & drag to pan.</span>
+                    <button id="btn_reset_camera" class="btn btn-blue" style="margin-top:0;">Reset Camera</button>
+                </div>
+            </details>
+
+            <details>
+                <summary>Continent Layout</summary>
+                <div class="details-content">
+                    <label>
+                        <div class="label-text"><span>Active Continents</span> <span id="val_active_continents" class="value-display">5</span></div>
+                        <input type="range" id="active_continents" min="0" max="5" step="1" value="5">
+                    </label>
+
+                    <div id="group_landmass_1">
+                        <div class="subsection-title">Landmass 1</div>
+                        <label><div class="label-text"><span>X Pos</span></div><input type="range" id="c1_x" min="-1.5" max="1.5" step="0.01" value="-0.36"></label>
+                        <label><div class="label-text"><span>Y Pos</span></div><input type="range" id="c1_y" min="-1.0" max="1.0" step="0.01" value="0.04"></label>
+                        <label><div class="label-text"><span>X Scale</span></div><input type="range" id="c1_sx" min="0.1" max="3.0" step="0.01" value="1.04"></label>
+                        <label><div class="label-text"><span>Y Scale</span></div><input type="range" id="c1_sy" min="0.1" max="3.0" step="0.01" value="0.55"></label>
+                    </div>
+
+                    <div id="group_landmass_2">
+                        <div class="subsection-title">Landmass 2</div>
+                        <label><div class="label-text"><span>X Pos</span></div><input type="range" id="c2_x" min="-1.5" max="1.5" step="0.01" value="0.22"></label>
+                        <label><div class="label-text"><span>Y Pos</span></div><input type="range" id="c2_y" min="-1.0" max="1.0" step="0.01" value="-0.13"></label>
+                        <label><div class="label-text"><span>X Scale</span></div><input type="range" id="c2_sx" min="0.1" max="3.0" step="0.01" value="0.82"></label>
+                        <label><div class="label-text"><span>Y Scale</span></div><input type="range" id="c2_sy" min="0.1" max="3.0" step="0.01" value="0.75"></label>
+                    </div>
+
+                    <div id="group_landmass_3">
+                        <div class="subsection-title">Landmass 3</div>
+                        <label><div class="label-text"><span>X Pos</span></div><input type="range" id="c3_x" min="-1.5" max="1.5" step="0.01" value="1.14"></label>
+                        <label><div class="label-text"><span>Y Pos</span></div><input type="range" id="c3_y" min="-1.0" max="1.0" step="0.01" value="-0.25"></label>
+                        <label><div class="label-text"><span>X Scale</span></div><input type="range" id="c3_sx" min="0.1" max="3.0" step="0.01" value="1.00"></label>
+                        <label><div class="label-text"><span>Y Scale</span></div><input type="range" id="c3_sy" min="0.1" max="3.0" step="0.01" value="0.99"></label>
+                    </div>
+
+                    <div id="group_landmass_4">
+                        <div class="subsection-title">Landmass 4</div>
+                        <label><div class="label-text"><span>X Pos</span></div><input type="range" id="c4_x" min="-1.5" max="1.5" step="0.01" value="1.04"></label>
+                        <label><div class="label-text"><span>Y Pos</span></div><input type="range" id="c4_y" min="-1.0" max="1.0" step="0.01" value="0.15"></label>
+                        <label><div class="label-text"><span>X Scale</span></div><input type="range" id="c4_sx" min="0.1" max="3.0" step="0.01" value="0.69"></label>
+                        <label><div class="label-text"><span>Y Scale</span></div><input type="range" id="c4_sy" min="0.1" max="3.0" step="0.01" value="0.40"></label>
+                    </div>
+
+                    <div id="group_landmass_5">
+                        <div class="subsection-title">Landmass 5</div>
+                        <label><div class="label-text"><span>X Pos</span></div><input type="range" id="c5_x" min="-1.5" max="1.5" step="0.01" value="-0.03"></label>
+                        <label><div class="label-text"><span>Y Pos</span></div><input type="range" id="c5_y" min="-1.0" max="1.0" step="0.01" value="0.30"></label>
+                        <label><div class="label-text"><span>X Scale</span></div><input type="range" id="c5_sx" min="0.1" max="3.0" step="0.01" value="0.96"></label>
+                        <label><div class="label-text"><span>Y Scale</span></div><input type="range" id="c5_sy" min="0.1" max="3.0" step="0.01" value="0.47"></label>
+                    </div>
+                </div>
+            </details>
+
+            <details>
+                <summary>Terrain Sculpting</summary>
+                <div class="details-content">
+                    <div class="subsection-title">Macro Noise (Shape)</div>
+                    <label>
+                        <div class="label-text"><span>Scale</span> <span id="val_macro_scale" class="value-display">5.00</span></div>
+                        <input type="range" id="macro_scale" min="0.1" max="10.0" step="0.1" value="5.0">
+                    </label>
+                    <label>
+                        <div class="label-text"><span>Distortion</span> <span id="val_macro_dist" class="value-display">0.81</span></div>
+                        <input type="range" id="macro_dist" min="0.0" max="2.0" step="0.01" value="0.81">
+                    </label>
+
+                    <div class="subsection-title">Micro Noise (Shorelines)</div>
+                    <label>
+                        <div class="label-text"><span>Scale</span> <span id="val_micro_scale" class="value-display">20.20</span></div>
+                        <input type="range" id="micro_scale" min="2.0" max="50.0" step="0.1" value="20.2">
+                    </label>
+                    <label>
+                        <div class="label-text"><span>Distortion</span> <span id="val_micro_dist" class="value-display">0.15</span></div>
+                        <input type="range" id="micro_dist" min="0.0" max="0.5" step="0.01" value="0.15">
+                    </label>
+                </div>
+            </details>
+
+            <details>
+                <summary>Climate & Rivers</summary>
+                <div class="details-content">
+                    <div class="subsection-title">Biomes</div>
+                    <label>
+                        <div class="label-text"><span>Desert Spread</span> <span id="val_desert_spread" class="value-display">0.21</span></div>
+                        <input type="range" id="desert_spread" min="0.0" max="1.0" step="0.01" value="0.21">
+                    </label>
+                    
+                    <div class="subsection-title">Ice Caps</div>
+                    <label>
+                        <div class="label-text"><span>Pole Position</span> <span id="val_pole_pos" class="value-display">0.32</span></div>
+                        <input type="range" id="p_pos" min="0.1" max="1.0" step="0.01" value="0.32">
+                    </label>
+                    <label>
+                        <div class="label-text"><span>Pole Distort</span> <span id="val_pole_dist" class="value-display">0.54</span></div>
+                        <input type="range" id="p_dist" min="0.0" max="1.5" step="0.01" value="0.54">
+                    </label>
+                    <label>
+                        <div class="label-text"><span>Snow Spread</span> <span id="val_snow_spread" class="value-display">0.65</span></div>
+                        <input type="range" id="snow_spread" min="0.0" max="1.0" step="0.01" value="0.65">
+                    </label>
+
+                    <div class="subsection-title">River Systems</div>
+                    <label>
+                        <div class="label-text"><span>River Seed</span> <span id="val_river_seed" class="value-display">2838.00</span></div>
+                        <input type="range" id="river_seed" min="0.0" max="10000.0" step="1" value="2838">
+                    </label>
+                    <label>
+                        <div class="label-text"><span>Density (Scale)</span> <span id="val_river_scale" class="value-display">5.00</span></div>
+                        <input type="range" id="river_scale" min="1.0" max="20.0" step="0.1" value="5.0">
+                    </label>
+                    <label>
+                        <div class="label-text"><span>River Width</span> <span id="val_river_width" class="value-display">0.110</span></div>
+                        <input type="range" id="river_width" min="0.01" max="0.3" step="0.01" value="0.11">
+                    </label>
+                </div>
+            </details>
+
+            <details>
+                <summary>Political Regions</summary>
+                <div class="details-content">
+                    <button id="btn_toggle_regions" class="btn btn-blue" style="margin-top:0;">Regions: OFF</button>
+                    
+                    <label style="flex-direction: row; align-items: center; gap: 10px; margin: 15px 0; font-size: 13px;">
+                        <input type="checkbox" id="regions_on_poles" style="width: 16px; height: 16px;">
+                        <span>Allow Regions on Poles</span>
+                    </label>
+
+                    <div class="subsection-title">Generation</div>
+                    <label>
+                        <div class="label-text"><span>Region Seed</span> <span id="val_region_seed" class="value-display">50</span></div>
+                        <input type="range" id="region_seed" min="0.0" max="100.0" step="1.0" value="50">
+                    </label>
+                    <label>
+                        <div class="label-text"><span>Name Seed</span> <span id="val_name_seed" class="value-display">1</span></div>
+                        <input type="range" id="name_seed" min="0.0" max="1000.0" step="1.0" value="1">
+                    </label>
+                    
+                    <label>
+                        <div class="label-text"><span>Region Count</span> <span id="val_region_count" class="value-display">125</span></div>
+                        <input type="range" id="region_count" min="5" max="250" step="1" value="125">
+                    </label>
+
+                    <div class="subsection-title">Style</div>
+                    <label>
+                        <div class="label-text"><span>Overlay Opacity</span> <span id="val_region_opacity" class="value-display">0.30</span></div>
+                        <input type="range" id="region_opacity" min="0.1" max="1.0" step="0.05" value="0.30">
+                    </label>
+                    <label>
+                        <div class="label-text"><span>Border Jaggedness</span> <span id="val_region_jagged" class="value-display">0.15</span></div>
+                        <input type="range" id="region_jagged" min="0.0" max="0.3" step="0.01" value="0.15">
+                    </label>
+                    <label>
+                        <div class="label-text"><span>Border Thickness</span> <span id="val_region_border" class="value-display">0.001</span></div>
+                        <input type="range" id="region_border" min="0.001" max="0.02" step="0.001" value="0.001">
+                    </label>
+                </div>
+            </details>
+
+            <details>
+                <summary>Aesthetics & Colors</summary>
+                <div class="details-content">
+                    <div class="subsection-title">Post Processing</div>
+                    <label>
+                        <div class="label-text"><span>Soften (Anti-Alias)</span> <span id="val_soften" class="value-display">0.10</span></div>
+                        <input type="range" id="soften" min="0.0" max="3.0" step="0.05" value="0.10">
+                    </label>
+                    <label>
+                        <div class="label-text"><span>Film Grain</span> <span id="val_grain" class="value-display">0.04</span></div>
+                        <input type="range" id="grain" min="0.0" max="0.25" step="0.01" value="0.04">
+                    </label>
+
+                    <div class="subsection-title">Oceans & Beaches</div>
+                    <div class="color-grid">
+                        <label><div class="label-text"><span>Deep Ocean</span></div><input type="color" id="col_deepOcean" value="#070c13"></label>
+                        <label><div class="label-text"><span>Shallows</span></div><input type="color" id="col_shallowOcean" value="#111d2d"></label>
+                        <label style="grid-column: span 2;"><div class="label-text"><span>Coastal Shallows</span></div><input type="color" id="col_sand" value="#17263a"></label>                    </div>
+
+                    <div class="subsection-title">Vegetation & Mountains</div>
+                    <div class="color-grid">
+                        <label><div class="label-text"><span>Coast Grass</span></div><input type="color" id="col_coast" value="#2c4918"></label>
+                        <label><div class="label-text"><span>Inland Grass</span></div><input type="color" id="col_inland" value="#407326"></label>
+                        <label style="grid-column: span 2;"><div class="label-text"><span>Mountains</span></div><input type="color" id="col_mountains" value="#808080"></label>
+                    </div>
+
+                    <div class="subsection-title">Desert Biome</div>
+                    <div class="color-grid">
+                        <label><div class="label-text"><span>Desert Light</span></div><input type="color" id="col_desertLight" value="#aa9674"></label>
+                        <label><div class="label-text"><span>Desert Mid</span></div><input type="color" id="col_desertMid" value="#b19568"></label>
+                        <label style="grid-column: span 2;"><div class="label-text"><span>Desert Dark</span></div><input type="color" id="col_desertDark" value="#93785c"></label>
+                    </div>
+
+                    <div class="subsection-title">Polar Biome</div>
+                    <div class="color-grid">
+                        <label><div class="label-text"><span>Ice Light</span></div><input type="color" id="col_iceLight" value="#e0dcdc"></label>
+                        <label><div class="label-text"><span>Ice Dark</span></div><input type="color" id="col_iceDark" value="#d9d9d9"></label>
+                    </div>
+                </div>
+            </details>
+
+        </div>
+    </div>
+
+<!-- core js files -->
+
+<script src="../js/auth.js"></script>
+
+    <script src="shaders/vectorNoise.js"></script>
+    <script src="shaders/pos.js"></script>
+    <script src="shaders/poles.js"></script>
+    <script src="shaders/rivers.js"></script> 
+    <script src="shaders/regions.js"></script> 
+    <script src="shaders/shaders.js"></script>
+
+    <script src="names.js"></script>
+    <script src="cartagraphia.js"></script>
+</body>
+</html>

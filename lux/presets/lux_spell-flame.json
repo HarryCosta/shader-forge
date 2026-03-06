@@ -1,0 +1,26 @@
+{
+  "shape": 5,
+  "rotation": 0,
+  "arc_style": 1,
+  "turb_style": 1,
+  "speed": 1.5,
+  "scale": 0.5,
+  "turbulence": 1.55,
+  "turb_scale": 2,
+  "turb_speed": 2.4,
+  "sparks": 1,
+  "pulse": 3.5,
+  "lightning": 0.3,
+  "arc_speed": 0.4,
+  "arc_scale": 1.5,
+  "col_core": [
+    1,
+    1,
+    1
+  ],
+  "col_aura": [
+    0.8509803921568627,
+    0.43529411764705883,
+    0.21176470588235294
+  ]
+}
