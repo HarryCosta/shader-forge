@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lux | ShaderForge</title>
     <link rel="stylesheet" href="lux.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/nano.min.css"/>
 </head>
 <body>
 
@@ -74,8 +75,14 @@
                         <input type="range" id="rotation" min="0.0" max="6.28" step="0.01" value="0.0">
                     </label>
                     <div class="color-grid">
-                        <label><div class="label-text"><span>Core</span></div><input type="color" id="col_core" value="#ffffff"></label>
-                        <label><div class="label-text"><span>Aura</span></div><input type="color" id="col_aura" value="#00d2ff"></label>
+                        <label>
+                            <div class="label-text"><span>Core</span></div>
+                            <div id="col_core" class="custom-color-picker" data-default="#ffffff"></div>
+                        </label>
+                        <label>
+                            <div class="label-text"><span>Aura</span></div>
+                            <div id="col_aura" class="custom-color-picker" data-default="#00d2ff"></div>
+                        </label>
                     </div>
                 </div>
             </details>
@@ -156,6 +163,7 @@
 
     <script src="../js/auth.js"></script>
     <script src="shader/luxshader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
     <script src="lux.js"></script>
 </body>
 </html>

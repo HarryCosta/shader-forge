@@ -247,3 +247,21 @@ input[type="color"]::-webkit-color-swatch { border: 1px solid var(--border-color
     background: #58a6ff;
     color: white;
 }
+
+/* --- CUSTOM COLOR PICKER OVERRIDES --- */
+.custom-color-picker { width: 100%; }
+.pickr { width: 100%; }
+.pcr-button {
+    width: 100% !important;
+    height: 28px !important;
+    border-radius: 4px !important;
+    border: 1px solid var(--border-color) !important;
+}
+.pcr-button::after { border-radius: 3px !important; }
+.pcr-app {
+    background: #161b22;
+    border: 1px solid #30363d;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    font-family: inherit;
+    z-index: 2000 !important; /* Forces the color picker to stay above the UI panel */
+}

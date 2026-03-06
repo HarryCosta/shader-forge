@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cartagraphia</title>
     <link rel="stylesheet" href="cartagraphia.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/nano.min.css"/>
     <link rel="icon" type="image/png" href="image/icon.png">
 </head>
 <body>
@@ -233,28 +234,29 @@
 
                     <div class="subsection-title">Oceans & Beaches</div>
                     <div class="color-grid">
-                        <label><div class="label-text"><span>Deep Ocean</span></div><input type="color" id="col_deepOcean" value="#070c13"></label>
-                        <label><div class="label-text"><span>Shallows</span></div><input type="color" id="col_shallowOcean" value="#111d2d"></label>
-                        <label style="grid-column: span 2;"><div class="label-text"><span>Coastal Shallows</span></div><input type="color" id="col_sand" value="#17263a"></label>                    </div>
+                        <label><div class="label-text"><span>Deep Ocean</span></div><div id="col_deepOcean" class="custom-color-picker" data-default="#070c13"></div></label>
+                        <label><div class="label-text"><span>Shallows</span></div><div id="col_shallowOcean" class="custom-color-picker" data-default="#111d2d"></div></label>
+                        <label style="grid-column: span 2;"><div class="label-text"><span>Coastal Shallows</span></div><div id="col_sand" class="custom-color-picker" data-default="#17263a"></div></label>
+                    </div>
 
                     <div class="subsection-title">Vegetation & Mountains</div>
                     <div class="color-grid">
-                        <label><div class="label-text"><span>Coast Grass</span></div><input type="color" id="col_coast" value="#2c4918"></label>
-                        <label><div class="label-text"><span>Inland Grass</span></div><input type="color" id="col_inland" value="#407326"></label>
-                        <label style="grid-column: span 2;"><div class="label-text"><span>Mountains</span></div><input type="color" id="col_mountains" value="#808080"></label>
+                        <label><div class="label-text"><span>Coast Grass</span></div><div id="col_coast" class="custom-color-picker" data-default="#2c4918"></div></label>
+                        <label><div class="label-text"><span>Inland Grass</span></div><div id="col_inland" class="custom-color-picker" data-default="#407326"></div></label>
+                        <label style="grid-column: span 2;"><div class="label-text"><span>Mountains</span></div><div id="col_mountains" class="custom-color-picker" data-default="#808080"></div></label>
                     </div>
 
                     <div class="subsection-title">Desert Biome</div>
                     <div class="color-grid">
-                        <label><div class="label-text"><span>Desert Light</span></div><input type="color" id="col_desertLight" value="#aa9674"></label>
-                        <label><div class="label-text"><span>Desert Mid</span></div><input type="color" id="col_desertMid" value="#b19568"></label>
-                        <label style="grid-column: span 2;"><div class="label-text"><span>Desert Dark</span></div><input type="color" id="col_desertDark" value="#93785c"></label>
+                        <label><div class="label-text"><span>Desert Light</span></div><div id="col_desertLight" class="custom-color-picker" data-default="#aa9674"></div></label>
+                        <label><div class="label-text"><span>Desert Mid</span></div><div id="col_desertMid" class="custom-color-picker" data-default="#b19568"></div></label>
+                        <label style="grid-column: span 2;"><div class="label-text"><span>Desert Dark</span></div><div id="col_desertDark" class="custom-color-picker" data-default="#93785c"></div></label>
                     </div>
 
                     <div class="subsection-title">Polar Biome</div>
                     <div class="color-grid">
-                        <label><div class="label-text"><span>Ice Light</span></div><input type="color" id="col_iceLight" value="#e0dcdc"></label>
-                        <label><div class="label-text"><span>Ice Dark</span></div><input type="color" id="col_iceDark" value="#d9d9d9"></label>
+                        <label><div class="label-text"><span>Ice Light</span></div><div id="col_iceLight" class="custom-color-picker" data-default="#e0dcdc"></div></label>
+                        <label><div class="label-text"><span>Ice Dark</span></div><div id="col_iceDark" class="custom-color-picker" data-default="#d9d9d9"></div></label>
                     </div>
                 </div>
             </details>
@@ -262,17 +264,15 @@
         </div>
     </div>
 
-<!-- core js files -->
-
-<script src="../js/auth.js"></script>
-
+    <script src="../js/auth.js"></script>
     <script src="shaders/vectorNoise.js"></script>
     <script src="shaders/pos.js"></script>
     <script src="shaders/poles.js"></script>
     <script src="shaders/rivers.js"></script> 
     <script src="shaders/regions.js"></script> 
     <script src="shaders/shaders.js"></script>
-
+    
+    <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
     <script src="names.js"></script>
     <script src="cartagraphia.js"></script>
 </body>

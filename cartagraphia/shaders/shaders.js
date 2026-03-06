@@ -52,6 +52,7 @@ const mapFsSource = `
     uniform bool u_show_regions;
     uniform bool u_regions_on_poles;
     uniform int u_hovered_region;
+    uniform int u_hovered_continent; // NEW UNIFORM FOR HOVER HIGHLIGHT
     
     // Accepts 200 visible points. Z is the Global ID!
     uniform vec3 u_region_points[200];
@@ -186,6 +187,32 @@ const mapFsSource = `
                         alphaState = encodedID / 255.0;
                     }
                 }
+            }
+        }
+
+      // --- CONTINENT HOVER HIGHLIGHT ---
+        if (u_hovered_continent > 0) {
+            float hMask = 0.0;
+            if (u_hovered_continent == 1) hMask = mask1;
+            else if (u_hovered_continent == 2) hMask = mask2;
+            else if (u_hovered_continent == 3) hMask = mask3;
+            else if (u_hovered_continent == 4) hMask = mask4;
+            else if (u_hovered_continent == 5) hMask = mask5;
+            
+            if (hMask > 0.0) {
+                // 1. Reconstruct this specific continent's noisy elevation
+                float localElevation = (hMask * 0.55) + (mapNoise * 0.45);
+                
+                // 2. Draw a tight ring exactly at the coastline (0.47)
+                float ring = smoothstep(0.45, 0.47, localElevation) * smoothstep(0.49, 0.47, localElevation);
+                
+                // 3. Make the subtle inner fill only apply to actual land, not the ocean
+                float fill = smoothstep(0.46, 0.48, localElevation) * 0.15;
+                
+                vec3 glowColor = vec3(1.0, 1.0, 1.0); // #ffffff
+                
+                // 4. Apply it with boosted brightness (ring * 1.5) to make it pop
+                color = mix(color, glowColor, clamp((ring * 1.5) + fill, 0.0, 1.0));
             }
         }
         

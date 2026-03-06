@@ -178,3 +178,21 @@ input[type="color"]::-webkit-color-swatch { border: 1px solid #555; border-radiu
 .btn-outline:hover { background: #8ab4f8; color: #0d1117; }
 .btn-delete { border-color: #f85149; color: #f85149; }
 .btn-delete:hover { background: #f85149; color: #fff; }
+
+/* --- CUSTOM COLOR PICKER OVERRIDES --- */
+.custom-color-picker { width: 100%; }
+.pickr { width: 100%; }
+.pcr-button {
+    width: 100% !important;
+    height: 28px !important;
+    border-radius: 4px !important;
+    border: 1px solid #555 !important;
+}
+.pcr-button::after { border-radius: 3px !important; }
+.pcr-app {
+    background: #161b22;
+    border: 1px solid #30363d;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    font-family: inherit;
+    z-index: 2000 !important;
+}

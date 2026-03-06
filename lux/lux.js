@@ -45,10 +45,20 @@ const locs = {
 
 const state = {};
 
+// --- BULLETPROOF HEX CONVERTER ---
 function hexToRgb(hex) {
+    const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+    hex = hex.replace(shorthandRegex, function(m, r, g, b) {
+        return "#" + r + r + g + g + b + b;
+    });
+    
+    if (!hex.startsWith('#')) hex = '#' + hex;
+
     let r = parseInt(hex.slice(1, 3), 16) / 255;
     let g = parseInt(hex.slice(3, 5), 16) / 255;
     let b = parseInt(hex.slice(5, 7), 16) / 255;
+    
+    if (isNaN(r) || isNaN(g) || isNaN(b)) return [1.0, 1.0, 1.0];
     return [r, g, b];
 }
 
@@ -73,9 +83,7 @@ const inputs = {
     pulse: document.getElementById('pulse'),           
     lightning: document.getElementById('lightning'),
     arc_speed: document.getElementById('arc_speed'),   
-    arc_scale: document.getElementById('arc_scale'),   
-    col_core: document.getElementById('col_core'),
-    col_aura: document.getElementById('col_aura')
+    arc_scale: document.getElementById('arc_scale')
 };
 
 function updateState(id, val) {
@@ -88,7 +96,6 @@ function updateState(id, val) {
     }
 }
 
-// Populate initial state
 Object.keys(inputs).forEach(id => updateState(id, inputs[id].value));
 
 Object.keys(inputs).forEach(id => {
@@ -100,6 +107,61 @@ Object.keys(inputs).forEach(id => {
             valDisplay.innerText = state[id].toFixed(2);
         }
     });
+});
+
+// --- INITIALIZE ADVANCED COLOR PICKERS ---
+const colorPickers = {}; 
+
+document.querySelectorAll('.custom-color-picker').forEach(el => {
+    const id = el.id;
+    const defaultColor = el.getAttribute('data-default');
+    
+    updateState(id, defaultColor);
+
+    const pickr = Pickr.create({
+        el: el,
+        theme: 'nano',
+        default: defaultColor,
+        swatches: [
+            '#ffffff', '#ff4d4d', '#4dff4d', '#4d4dff', '#ffff4d', '#ff4dff', '#4dffff', '#000000'
+        ],
+        components: {
+            preview: true,
+            opacity: false,
+            hue: true,
+            interaction: {
+                hex: true,
+                rgba: true,
+                hsla: true,
+                input: true
+            }
+        }
+    });
+
+    // 1. Live update the WebGL engine while dragging (Smooth, no UI redraws)
+    pickr.on('change', (color) => {
+        const hex = color.toHEXA().toString();
+        updateState(id, hex);
+    });
+
+    // 2. Lock in the color to the UI button when mouse drag stops
+    pickr.on('changestop', (source, instance) => {
+        instance.applyColor(true); 
+    });
+
+    // 3. Lock in the color instantly if they click a swatch
+    pickr.on('swatchselect', (color, instance) => {
+        const hex = color.toHEXA().toString();
+        updateState(id, hex);
+        instance.applyColor(true);
+    });
+
+    // 4. Fallback: Lock in the color if they click completely off the menu
+    pickr.on('hide', instance => {
+        instance.applyColor(true);
+    });
+
+    colorPickers[id] = pickr;
 });
 
 // --- PRESET FETCHING SYSTEM ---
@@ -116,10 +178,8 @@ const PRESETS = [
 async function ensureDefaultsLoaded() {
     let libStr = localStorage.getItem(STORAGE_KEY);
     if (!libStr) {
-        // Build base structure
         let lib = { categories: ["Pyromancy", "Radiance", "Arcane", "Void", "General"], spells: [] };
         
-        // Loop through and fetch each JSON configuration
         for (let i = 0; i < PRESETS.length; i++) {
             try {
                 const res = await fetch(PRESETS[i].file);
@@ -136,12 +196,10 @@ async function ensureDefaultsLoaded() {
                 console.error("Error loading preset: " + PRESETS[i].file, e);
             }
         }
-        // Save dynamically generated library back to local storage
         saveLibrary(lib);
     }
 }
 
-// Trigger fetch immediately on app load
 ensureDefaultsLoaded();
 
 function getLibrary() {
@@ -152,7 +210,6 @@ function getLibrary() {
 function saveLibrary(lib) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(lib));
 }
-
 
 // --- SPELLBOOK & INSCRIPTION SYSTEM ---
 const modalOverlay = document.getElementById('spellbook-overlay');
@@ -284,8 +341,14 @@ modalOverlay.addEventListener('click', (e) => {
 function loadSpell(spell) {
     Object.keys(spell.params).forEach(key => {
         state[key] = spell.params[key];
-        if (inputs[key]) {
-            inputs[key].value = key.startsWith('col_') ? rgbToHex(spell.params[key]) : spell.params[key];
+        
+        if (key.startsWith('col_')) {
+            const hex = rgbToHex(spell.params[key]);
+            if (colorPickers[key]) {
+                colorPickers[key].setColor(hex);
+            }
+        } else if (inputs[key]) {
+            inputs[key].value = spell.params[key];
             const display = document.getElementById('val_' + key);
             if (display) display.innerText = parseFloat(inputs[key].value).toFixed(2);
         }

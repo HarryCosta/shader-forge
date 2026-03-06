@@ -70,7 +70,7 @@ const mapLocs = {
     show_regions: gl.getUniformLocation(mapProgram, "u_show_regions"),
     regions_on_poles: gl.getUniformLocation(mapProgram, "u_regions_on_poles"),
     hovered_region: gl.getUniformLocation(mapProgram, "u_hovered_region"),
-    hovered_continent: gl.getUniformLocation(mapProgram, "u_hovered_continent"),
+    hovered_continent: gl.getUniformLocation(mapProgram, "u_hovered_continent"), // NEW
     region_points: gl.getUniformLocation(mapProgram, "u_region_points"),
     region_opacity: gl.getUniformLocation(mapProgram, "u_region_opacity"),
     region_jagged: gl.getUniformLocation(mapProgram, "u_region_jagged"),
@@ -87,8 +87,9 @@ const postLocs = {
 // --- KINGDOM GENERATION LOGIC ---
 let showRegions = false;
 let hoveredRegion = -1;
-let hoveredContinent = 0;
+let hoveredContinent = 0; // NEW: Tracks mouse over UI panels
 
+// NEW: Add Mouse Listeners to Continent Groups
 for (let i = 1; i <= 5; i++) {
     const group = document.getElementById('group_landmass_' + i);
     if (group) {
@@ -101,6 +102,7 @@ const MAX_GLOBAL_REGIONS = 500;
 const MAX_GPU_REGIONS = 200; 
 const globalRegionPoints = new Float32Array(MAX_GLOBAL_REGIONS * 2);
 const gpuRegionPoints = new Float32Array(MAX_GPU_REGIONS * 3);
+
 const kingdomNames = [];
 
 function mulberry32(a) {
@@ -115,13 +117,17 @@ function mulberry32(a) {
 function generateNames(seed) {
     kingdomNames.length = 0; 
     let rng = mulberry32(Math.floor(seed * 10000) + 88888); 
+    
     let prefixes = typeof kingdomPrefixes !== 'undefined' ? kingdomPrefixes : ["King"];
     let suffixes = typeof kingdomSuffixes !== 'undefined' ? kingdomSuffixes : ["dom"];
+    
     for(let i = 0; i < MAX_GLOBAL_REGIONS; i++) {
         let p = prefixes[Math.floor(rng() * prefixes.length)];
         let s = suffixes[Math.floor(rng() * suffixes.length)];
+        
         let numerals = [" I", " II", " III", " IV", " V"];
         let num = rng() > 0.90 ? numerals[Math.floor(rng() * numerals.length)] : "";
+        
         kingdomNames.push(p + s + num);
     }
 }
@@ -129,24 +135,32 @@ function generateNames(seed) {
 function generateRegionPoints(seed, count) {
     count = count || 100; 
     let rng = mulberry32(Math.floor(seed * 10000) + 12345);
+    
     let aspect = 1.77; 
     if (canvas.clientWidth && canvas.clientHeight) {
         aspect = canvas.clientWidth / canvas.clientHeight;
     }
+
     let rows = Math.max(1, Math.round(Math.sqrt(count / aspect)));
     let cols = Math.max(1, Math.ceil(count / rows));
+
     let mapWidth = 3.5;
     let mapHeight = 2.0;
+
     let cellW = mapWidth / cols;
     let cellH = mapHeight / rows;
+
     let startX = (aspect * 0.5) - (mapWidth * 0.5);
     let startY = 0.5 - (mapHeight * 0.5);
+    
     for(let i = 0; i < MAX_GLOBAL_REGIONS; i++) {
         if (i < count) {
             let c = i % cols;
             let r = Math.floor(i / cols);
+
             let baseX = startX + (c * cellW) + (cellW * 0.5);
             let baseY = startY + (r * cellH) + (cellH * 0.5);
+
             globalRegionPoints[i*2]   = baseX + (rng() - 0.5) * cellW * 0.8;
             globalRegionPoints[i*2+1] = baseY + (rng() - 0.5) * cellH * 0.8;
         } else {
@@ -156,6 +170,8 @@ function generateRegionPoints(seed, count) {
     }
 }
 
+
+// --- UI BUTTON LOGIC ---
 document.getElementById('btn_toggle_regions').addEventListener('click', () => {
     showRegions = !showRegions;
     const btn = document.getElementById('btn_toggle_regions');
@@ -171,6 +187,7 @@ document.getElementById('btn_toggle_regions').addEventListener('click', () => {
         hoveredRegion = -1;
     }
 });
+
 
 // --- MOUSE CAMERA & GPU-READBACK ENGINE ---
 let camZoom = 0.80;
@@ -205,10 +222,13 @@ window.addEventListener('mousemove', (e) => {
         let dy = e.clientY - lastY;
         lastX = e.clientX;
         lastY = e.clientY;
+
         camPanX -= (dx / canvas.width) / camZoom;
         camPanY += (dy / canvas.height) / camZoom;
+        
         clampCamera();
     }
+
     if (showRegions) {
         gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
         let pixel = new Uint8Array(4);
@@ -218,11 +238,17 @@ window.addEventListener('mousemove', (e) => {
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
         let alphaVal = pixel[3];
+        
         if (alphaVal > 0 && alphaVal < 255) {
             let rIdBase = alphaVal - 1; 
+            
             let possibleIDs = [];
             let activeCount = Math.floor(state.region_count || 100);
-            for (let k = rIdBase; k < activeCount; k += 250) { possibleIDs.push(k); }
+
+            for (let k = rIdBase; k < activeCount; k += 250) {
+                possibleIDs.push(k);
+            }
+
             let bestId = -1;
             if (possibleIDs.length === 1) {
                 bestId = possibleIDs[0];
@@ -234,18 +260,24 @@ window.addEventListener('mousemove', (e) => {
                 let worldY = (mouseUvY - 0.5) / camZoom + 0.5 + camPanY;
                 let st_X = worldX * aspect;
                 let st_Y = worldY;
+
                 let minDist = Infinity;
                 for (let id of possibleIDs) {
                     let dx = globalRegionPoints[id*2] - st_X;
                     let dy = globalRegionPoints[id*2+1] - st_Y;
                     let distSq = dx*dx + dy*dy;
-                    if (distSq < minDist) { minDist = distSq; bestId = id; }
+                    if (distSq < minDist) {
+                        minDist = distSq;
+                        bestId = id;
+                    }
                 }
             }
+            
             if (bestId !== -1 && bestId !== hoveredRegion) {
                 hoveredRegion = bestId;
                 tooltip.innerText = "Kingdom of " + kingdomNames[bestId];
             }
+            
             tooltip.style.display = 'block';
             tooltip.style.left = (e.clientX + 15) + 'px';
             tooltip.style.top = (e.clientY + 15) + 'px';
@@ -259,31 +291,38 @@ window.addEventListener('mousemove', (e) => {
 canvas.addEventListener('wheel', (e) => {
     if (e.target !== canvas) return;
     e.preventDefault();
+    
     let mouseUvX = e.clientX / canvas.width;
     let mouseUvY = 1.0 - (e.clientY / canvas.height);
+    
     let worldX_before = (mouseUvX - 0.5) / camZoom + 0.5 + camPanX;
     let worldY_before = (mouseUvY - 0.5) / camZoom + 0.5 + camPanY;
+
     let zoomFactor = e.deltaY < 0 ? 1.15 : 0.85;
     camZoom *= zoomFactor;
+
     let worldX_after = (mouseUvX - 0.5) / camZoom + 0.5 + camPanX;
     let worldY_after = (mouseUvY - 0.5) / camZoom + 0.5 + camPanY;
+
     camPanX += (worldX_before - worldX_after);
     camPanY += (worldY_before - worldY_after);
+    
     clampCamera();
 }, { passive: false });
 
 document.getElementById('btn_reset_camera').addEventListener('click', () => {
-    camZoom = 0.80; camPanX = 0.00; camPanY = 0.00;
+    camZoom = 0.80;
+    camPanX = 0.00;
+    camPanY = 0.00;
 });
 
 
 // --- STATE CACHING & UI BINDING ---
-// Removed col_ fields from regular input processing
 const inputs = {
     active_continents: document.getElementById('active_continents'),
     regions_on_poles: document.getElementById('regions_on_poles'),
     region_seed: document.getElementById('region_seed'),
-    name_seed: document.getElementById('name_seed'),
+    name_seed: document.getElementById('name_seed'), 
     region_count: document.getElementById('region_count'),
     region_opacity: document.getElementById('region_opacity'),
     region_jagged: document.getElementById('region_jagged'),
@@ -311,27 +350,34 @@ const inputs = {
     c4_x: document.getElementById('c4_x'), c4_y: document.getElementById('c4_y'), 
     c4_sx: document.getElementById('c4_sx'), c4_sy: document.getElementById('c4_sy'),
     c5_x: document.getElementById('c5_x'), c5_y: document.getElementById('c5_y'), 
-    c5_sx: document.getElementById('c5_sx'), c5_sy: document.getElementById('c5_sy')
+    c5_sx: document.getElementById('c5_sx'), c5_sy: document.getElementById('c5_sy'),
+    col_deepOcean: document.getElementById('col_deepOcean'),
+    col_shallowOcean: document.getElementById('col_shallowOcean'),
+    col_sand: document.getElementById('col_sand'),
+    col_desertLight: document.getElementById('col_desertLight'),
+    col_desertMid: document.getElementById('col_desertMid'),
+    col_desertDark: document.getElementById('col_desertDark'),
+    col_coast: document.getElementById('col_coast'),
+    col_inland: document.getElementById('col_inland'),
+    col_mountains: document.getElementById('col_mountains'),
+    col_iceLight: document.getElementById('col_iceLight'),
+    col_iceDark: document.getElementById('col_iceDark')
 };
 
 const state = {};
 
 function hexToRgb(hex) {
-    const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-    hex = hex.replace(shorthandRegex, function(m, r, g, b) { return "#" + r + r + g + g + b + b; });
-    if (!hex.startsWith('#')) hex = '#' + hex;
     let r = parseInt(hex.slice(1, 3), 16) / 255;
     let g = parseInt(hex.slice(3, 5), 16) / 255;
     let b = parseInt(hex.slice(5, 7), 16) / 255;
-    if (isNaN(r) || isNaN(g) || isNaN(b)) return [1.0, 1.0, 1.0];
     return [r, g, b];
 }
 
 function rgbToHex(rgb) {
-    const r = Math.round(rgb[0] * 255).toString(16).padStart(2, '0');
-    const g = Math.round(rgb[1] * 255).toString(16).padStart(2, '0');
-    const b = Math.round(rgb[2] * 255).toString(16).padStart(2, '0');
-    return `#${r}${g}${b}`;
+    let r = Math.round(rgb[0] * 255);
+    let g = Math.round(rgb[1] * 255);
+    let b = Math.round(rgb[2] * 255);
+    return "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1);
 }
 
 function updateState(id, val) {
@@ -367,8 +413,10 @@ initContinentVisibility();
 
 Object.keys(inputs).forEach(id => {
     const eventType = inputs[id].type === 'checkbox' ? 'change' : 'input';
+    
     inputs[id].addEventListener(eventType, (e) => {
         updateState(id, inputs[id].type === 'checkbox' ? e.target.checked : e.target.value);
+        
         const valDisplay = document.getElementById('val_' + id);
         if (valDisplay && !id.startsWith('col_')) {
             let dec = 2;
@@ -376,61 +424,19 @@ Object.keys(inputs).forEach(id => {
             if (id === 'region_count' || id === 'active_continents' || id === 'region_seed' || id === 'name_seed') dec = 0;
             valDisplay.innerText = state[id].toFixed(dec);
         }
+
         if (id === 'region_seed' || id === 'region_count') {
             generateRegionPoints(state.region_seed, state.region_count);
         }
+        
         if (id === 'name_seed') {
             generateNames(state.name_seed);
         }
+        
         if (id === 'active_continents') {
             initContinentVisibility();
         }
     });
-});
-
-// --- ADVANCED COLOR PICKERS (PICKR) ---
-const colorPickers = {}; 
-
-document.querySelectorAll('.custom-color-picker').forEach(el => {
-    const id = el.id;
-    const defaultColor = el.getAttribute('data-default');
-    
-    updateState(id, defaultColor);
-
-    const pickr = Pickr.create({
-        el: el,
-        theme: 'nano',
-        default: defaultColor,
-        swatches: [
-            '#070c13', '#111d2d', '#17263a', '#2c4918', '#407326', '#808080', 
-            '#aa9674', '#b19568', '#93785c', '#e0dcdc', '#d9d9d9'
-        ],
-        components: {
-            preview: true, opacity: false, hue: true,
-            interaction: { hex: true, rgba: true, hsla: true, input: true }
-        }
-    });
-
-    pickr.on('change', (color) => {
-        const hex = color.toHEXA().toString();
-        updateState(id, hex);
-    });
-
-    pickr.on('changestop', (source, instance) => {
-        instance.applyColor(true); 
-    });
-
-    pickr.on('swatchselect', (color, instance) => {
-        const hex = color.toHEXA().toString();
-        updateState(id, hex);
-        instance.applyColor(true);
-    });
-
-    pickr.on('hide', instance => {
-        instance.applyColor(true);
-    });
-
-    colorPickers[id] = pickr;
 });
 
 
@@ -440,6 +446,7 @@ document.getElementById('btn_export').addEventListener('click', () => {
         state: state,
         camera: { zoom: camZoom, panX: camPanX, panY: camPanY }
     };
+    
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
     const dlAnchorElem = document.createElement('a');
     dlAnchorElem.setAttribute("href", dataStr);
@@ -471,25 +478,20 @@ function loadProjectData(importedData) {
                 state[key] = importedData.state[key];
             }
             
-            if (key.startsWith('col_')) {
-                // Update Pickr instance if it exists
-                if (colorPickers[key]) {
-                    colorPickers[key].setColor(rgbToHex(state[key]));
-                }
-            } else {
-                const inputEl = document.getElementById(key === 'region_scale' ? 'region_count' : key);
-                if (inputEl) {
-                    if (inputEl.type === 'checkbox') {
-                        inputEl.checked = state[key];
-                    } else {
-                        inputEl.value = state[key];
-                        const valDisplay = document.getElementById('val_' + (key === 'region_scale' ? 'region_count' : key));
-                        if (valDisplay) {
-                            let dec = 2;
-                            if (key === 'river_width' || key === 'region_border') dec = 3;
-                            if (key === 'region_count' || key === 'active_continents' || key === 'region_seed' || key === 'name_seed') dec = 0;
-                            valDisplay.innerText = state[key].toFixed(dec);
-                        }
+            const inputEl = document.getElementById(key === 'region_scale' ? 'region_count' : key);
+            if (inputEl) {
+                if (key.startsWith('col_')) {
+                    inputEl.value = rgbToHex(state[key]);
+                } else if (inputEl.type === 'checkbox') {
+                    inputEl.checked = state[key];
+                } else {
+                    inputEl.value = state[key];
+                    const valDisplay = document.getElementById('val_' + (key === 'region_scale' ? 'region_count' : key));
+                    if (valDisplay) {
+                        let dec = 2;
+                        if (key === 'river_width' || key === 'region_border') dec = 3;
+                        if (key === 'region_count' || key === 'active_continents' || key === 'region_seed' || key === 'name_seed') dec = 0;
+                        valDisplay.innerText = state[key].toFixed(dec);
                     }
                 }
             }
@@ -498,9 +500,11 @@ function loadProjectData(importedData) {
         if (state.active_continents !== undefined) {
             initContinentVisibility();
         }
+        
         if (importedData.state.region_seed !== undefined) {
             generateRegionPoints(importedData.state.region_seed, state.region_count);
         }
+        
         if (importedData.state.name_seed !== undefined) {
             generateNames(importedData.state.name_seed);
         } else {
@@ -512,6 +516,7 @@ function loadProjectData(importedData) {
 document.getElementById('file_import').addEventListener('change', (event) => {
     const file = event.target.files[0];
     if (!file) return;
+
     const reader = new FileReader();
     reader.onload = (e) => {
         try {
@@ -584,7 +589,9 @@ document.getElementById('btn-close-modal').addEventListener('click', () => {
 
 function renderProjects() {
     let userProjects = AppBackend.getUserProjects(); 
+    
     listContainer.innerHTML = '';
+    
     if (userProjects.length === 0) {
         listContainer.innerHTML = '<p style="text-align:center; color:#8b949e;">No saved projects found. Click "save map" in the top bar to create one!</p>';
         return;
@@ -661,6 +668,7 @@ function render() {
     
     let cX = (0.5 + camPanX) * aspect;
     let cY = 0.5 + camPanY;
+
     let halfViewW = (0.5 / camZoom) * aspect;
     let halfViewH = (0.5 / camZoom);
     let margin = 0.5; 
@@ -695,6 +703,7 @@ function render() {
         }
     }
 
+    // --- PASS 1: DRAW MAP TO FRAMEBUFFER ---
     gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
     gl.useProgram(mapProgram);
@@ -706,6 +715,7 @@ function render() {
     gl.uniform2f(mapLocs.res, gl.canvas.width, gl.canvas.height);
     gl.uniform1f(mapLocs.zoom, camZoom);
     gl.uniform2f(mapLocs.pan, camPanX, camPanY);
+
     gl.uniform1f(mapLocs.seed, state.map_seed);
     gl.uniform1f(mapLocs.macro_scale, state.macro_scale);
     gl.uniform1f(mapLocs.macro_dist, state.macro_dist);
@@ -714,7 +724,9 @@ function render() {
     gl.uniform1f(mapLocs.river_seed, state.river_seed);
     gl.uniform1f(mapLocs.river_scale, state.river_scale);
     gl.uniform1f(mapLocs.river_width, state.river_width);
+    
     gl.uniform1f(mapLocs.active_continents, state.active_continents);
+    
     gl.uniform1f(mapLocs.desert_spread, state.desert_spread);
     gl.uniform1f(mapLocs.p_pos, state.p_pos);
     gl.uniform1f(mapLocs.p_dist, state.p_dist);
@@ -746,15 +758,17 @@ function render() {
     gl.uniform1i(mapLocs.show_regions, showRegions ? 1 : 0);
     gl.uniform1i(mapLocs.regions_on_poles, state.regions_on_poles ? 1 : 0);
     gl.uniform1i(mapLocs.hovered_region, hoveredRegion);
-    gl.uniform1i(mapLocs.hovered_continent, hoveredContinent);
+    gl.uniform1i(mapLocs.hovered_continent, hoveredContinent); // NEW: Send hover state to GPU
     
     gl.uniform3fv(mapLocs.region_points, gpuRegionPoints);
+    
     gl.uniform1f(mapLocs.region_opacity, state.region_opacity);
     gl.uniform1f(mapLocs.region_jagged, state.region_jagged);
     gl.uniform1f(mapLocs.region_border, state.region_border);
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
+    // --- PASS 2: DRAW FILTERED IMAGE TO SCREEN ---
     gl.bindFramebuffer(gl.FRAMEBUFFER, null); 
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
     gl.useProgram(postProgram);
@@ -779,6 +793,7 @@ function render() {
         link.download = 'fantasy_map_' + Math.floor(state.map_seed) + '.png';
         link.href = dataURL;
         link.click();
+        
         requestImageDownload = false; 
     }
 
