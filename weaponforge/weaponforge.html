@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weapon Forge 3D</title>
+    <link rel="stylesheet" href="weaponforge.css">
+    
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+      }
+    </script>
+</head>
+<body>
+
+    <header class="app-toolbar">
+        <div class="toolbar-brand">⚔️ WEAPON FORGE 3D</div>
+        <div class="toolbar-divider">|</div>
+        <div class="toolbar-link" id="btn-toggle-ui">CLOSE FORGE</div>
+        <div class="toolbar-divider">|</div>
+        <div class="toolbar-link">SAVE WEAPON</div>
+        <div class="toolbar-divider">|</div>
+        <div class="toolbar-link">QUIT TO HUB</div>
+    </header>
+
+    <div id="forge-canvas">
+        <div id="canvas-container"></div>
+    </div>
+
+    <div id="ui-wrapper" class="open">
+        <div id="ui-panel">
+            <h2>SMITHING CONTROLS</h2>
+            
+            <div class="control-section">
+                <h3>BLADE</h3>
+                <div class="slider-group">
+                    <label>Width <span id="val-blade-w">50</span></label>
+                    <input type="range" id="inp-blade-w" min="20" max="120" value="50">
+                </div>
+                <div class="slider-group">
+                    <label>Length <span id="val-blade-h">380</span></label>
+                    <input type="range" id="inp-blade-h" min="150" max="600" value="380">
+                </div>
+                <div class="style-row">
+                    <div class="texture-group">
+                        <label>Shape</label>
+                        <div class="preview-btn btn-shape" data-category="blades" data-part="blade">
+                            <span class="tex-name" id="name-shape-blade">Standard</span>
+                        </div>
+                    </div>
+                    <div class="texture-group">
+                        <label>Material</label>
+                        <div class="preview-btn btn-texture" data-part="blade">
+                            <div class="tex-thumb" id="thumb-tex-blade" style="background-color: #cccccc;"></div>
+                            <span class="tex-name" id="name-tex-blade">Steel</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>GUARD</h3>
+                <div class="slider-group">
+                    <label>Width <span id="val-guard-w">140</span></label>
+                    <input type="range" id="inp-guard-w" min="60" max="300" value="140">
+                </div>
+                <div class="slider-group">
+                    <label>Height (Vertical) <span id="val-guard-h">35</span></label>
+                    <input type="range" id="inp-guard-h" min="10" max="100" value="35">
+                </div>
+                <div class="style-row">
+                    <div class="texture-group">
+                        <label>Shape</label>
+                        <div class="preview-btn btn-shape" data-category="guards" data-part="guard">
+                            <span class="tex-name" id="name-shape-guard">Standard</span>
+                        </div>
+                    </div>
+                    <div class="texture-group">
+                        <label>Material</label>
+                        <div class="preview-btn btn-texture" data-part="guard">
+                            <div class="tex-thumb" id="thumb-tex-guard" style="background-color: #555555;"></div>
+                            <span class="tex-name" id="name-tex-guard">Dark Iron</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>GRIP</h3>
+                <div class="slider-group">
+                    <label>Width <span id="val-grip-w">30</span></label>
+                    <input type="range" id="inp-grip-w" min="15" max="80" value="30">
+                </div>
+                <div class="slider-group">
+                    <label>Length (Vertical) <span id="val-grip-h">100</span></label>
+                    <input type="range" id="inp-grip-h" min="40" max="250" value="100">
+                </div>
+                <div class="style-row">
+                    <div class="texture-group">
+                        <label>Shape</label>
+                        <div class="preview-btn btn-shape" data-category="grips" data-part="grip">
+                            <span class="tex-name" id="name-shape-grip">Standard</span>
+                        </div>
+                    </div>
+                    <div class="texture-group">
+                        <label>Material</label>
+                        <div class="preview-btn btn-texture" data-part="grip">
+                            <div class="tex-thumb" id="thumb-tex-grip" style="background-color: #5c4033;"></div>
+                            <span class="tex-name" id="name-tex-grip">Brown Leather</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>POMMEL</h3>
+                <div class="slider-group">
+                    <label>Size <span id="val-pommel-size">45</span></label>
+                    <input type="range" id="inp-pommel-size" min="20" max="120" value="45">
+                </div>
+                <div class="style-row">
+                    <div class="texture-group">
+                        <label>Shape</label>
+                        <div class="preview-btn btn-shape" data-category="pommels" data-part="pommel">
+                            <span class="tex-name" id="name-shape-pommel">Round</span>
+                        </div>
+                    </div>
+                    <div class="texture-group">
+                        <label>Material</label>
+                        <div class="preview-btn btn-texture" data-part="pommel">
+                            <div class="tex-thumb" id="thumb-tex-pommel" style="background-color: #555555;"></div>
+                            <span class="tex-name" id="name-tex-pommel">Dark Iron</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="tex-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">SELECT OPTION</h3>
+                <button id="btn-close-modal">✕</button>
+            </div>
+            <div class="tex-grid" id="modal-tex-grid">
+                </div>
+        </div>
+    </div>
+    <div id="swatch-popover" class="swatch-popover"></div>
+    
+    <script type="module" src="weaponforge.js"></script>
+</body>
+</html>

@@ -39,5 +39,4 @@ body { margin: 0; padding: 0; background-color: #0d1117; font-family: 'Segoe UI'
 #btn-logout:hover {
     background: #f85149 !important;
     color: #fff !important;
-
 }
