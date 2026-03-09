@@ -1,0 +1,142 @@
+/* =========================================
+   SHADERFORGE BASE STYLES
+========================================= */
+body {
+    margin: 0;
+    background: #0d1117; 
+    color: #c9d1d9;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.app-toolbar {
+    height: 45px;
+    background: #0d1117;
+    border-bottom: 1px solid #30363d;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    z-index: 100;
+}
+.toolbar-brand { font-weight: 700; font-size: 14px; letter-spacing: 1px; color: #e6edf3; }
+.toolbar-link { font-size: 12px; font-weight: 600; color: #ffffff; cursor: pointer; text-transform: uppercase; transition: color 0.2s; user-select: none; }
+.toolbar-link:hover { color: #8ab4f8; }
+.toolbar-divider { color: #30363d; margin: 0 15px; font-size: 12px; }
+
+/* =========================================
+   3D CANVAS AREA
+========================================= */
+#forge-canvas {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at center, #21262d 0%, #0d1117 100%);
+    position: relative;
+}
+
+#canvas-container {
+    width: 100%;
+    height: 100%;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.panel-open #canvas-container {
+    transform: translateX(-160px); 
+}
+
+/* =========================================
+   RIGHT UI PANEL (Unchanged)
+========================================= */
+#ui-wrapper {
+    position: absolute; top: 65px; right: -350px; width: 320px; height: calc(100vh - 85px);
+    z-index: 10; transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+#ui-wrapper.open { right: 20px; }
+#ui-panel {
+    background: rgba(22, 27, 34, 0.95); border: 1px solid #30363d; border-radius: 8px;
+    height: 100%; padding: 20px; box-sizing: border-box; overflow-y: auto;
+    box-shadow: -5px 0 20px rgba(0,0,0,0.5); backdrop-filter: blur(10px);
+}
+#ui-panel::-webkit-scrollbar { width: 6px; }
+#ui-panel::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+
+h2 { color: #e6edf3; font-size: 14px; margin-top: 0; margin-bottom: 20px; border-bottom: 1px solid #30363d; padding-bottom: 10px; }
+.control-section { background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 15px; margin-bottom: 15px; }
+.control-section h3 { margin: 0 0 15px 0; font-size: 12px; color: #8ab4f8; letter-spacing: 1px; }
+
+.slider-group { margin-bottom: 15px; }
+.slider-group label { display: flex; justify-content: space-between; font-size: 11px; color: #8b949e; margin-bottom: 5px; text-transform: uppercase; }
+.slider-group label span { color: #c9d1d9; font-family: monospace; }
+input[type=range] { width: 100%; accent-color: #8ab4f8; cursor: pointer; }
+
+.style-row { 
+    display: flex; 
+    gap: 10px; 
+    flex-wrap: wrap; /* Allows buttons to drop to a new line */
+}
+.texture-group { 
+    flex: 1 1 40%; /* Tells it to take up about half the row, then wrap */
+    min-width: 100px; /* Prevents it from ever getting tiny and squished */
+    overflow: hidden; 
+    margin-bottom: 5px;
+}
+.texture-group label { display: block; font-size: 11px; color: #8b949e; margin-bottom: 5px; text-transform: uppercase; }
+.preview-btn { display: flex; align-items: center; background: #161b22; border: 1px solid #30363d; border-radius: 4px; padding: 6px; cursor: pointer; transition: border-color 0.2s; }
+.preview-btn:hover { border-color: #8ab4f8; }
+
+.tex-thumb { width: 28px; height: 28px; border-radius: 3px; margin-right: 8px; border: 1px solid #000; flex-shrink: 0; }
+.tex-name { font-size: 11px; color: #c9d1d9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* MODAL OVERLAY */
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(13, 17, 23, 0.85); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+.modal-overlay.active { display: flex; }
+.modal-content { background: #161b22; border: 1px solid #30363d; border-radius: 8px; width: 400px; padding: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
+.modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #30363d; padding-bottom: 10px; margin-bottom: 15px; }
+.modal-header h3 { margin: 0; color: #8ab4f8; font-size: 14px; letter-spacing: 1px;}
+#btn-close-modal { background: none; border: none; color: #8b949e; font-size: 16px; cursor: pointer; }
+#btn-close-modal:hover { color: #fff; }
+
+.tex-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+.grid-item { background: #0d1117; border: 1px solid #30363d; border-radius: 6px; overflow: hidden; cursor: pointer; transition: border-color 0.2s; padding: 15px; text-align: center;}
+.grid-item:hover { border-color: #8ab4f8; }
+.grid-item-color { height: 40px; border-radius: 4px; margin-bottom: 10px; border: 1px solid #000; }
+.grid-item-label { font-size: 11px; color: #c9d1d9; }
+
+/* =========================================
+   SWATCH POPOVER
+========================================= */
+.swatch-popover {
+    display: none;
+    position: fixed;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    z-index: 2000;
+    grid-template-columns: repeat(4, 1fr); /* 4 swatches per row */
+    gap: 10px;
+    width: max-content;
+}
+
+.swatch-popover.active {
+    display: grid;
+}
+
+.swatch-item {
+    width: 32px; 
+    height: 32px; 
+    border-radius: 4px; 
+    border: 1px solid #000; 
+    cursor: pointer; 
+    transition: transform 0.1s, border-color 0.1s;
+}
+
+.swatch-item:hover { 
+    transform: scale(1.15); 
+    border-color: #8ab4f8; 
+}
